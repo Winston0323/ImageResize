@@ -1,0 +1,21 @@
+# Unity Based Data Generator
+
+# 1.Description
+This is a tool for resize an NxN image (N is power of 2 for simplicity) and returns an image that is N/2 x N/2. The program use `glTexParameteri` as the algorithm of resizing since `GL_LINEAR` will use the four nearest pixel to produce the result, which is the same as required. I also implement a resize shader. Using such shader will also perform the required task using GLSL, which is also paralleling the code. I think both way will create fast result, rather than using CPU to compute. 
+
+# 2. How to use
+1. place all your NxN images inside `Image` folder
+2. Start the program
+3. All resized images will be present inside `Result` folder
+
+
+# 3. Examples:
+## Input image:
+<p align="center">
+  <img src="Image/test.png" alt="Logo" width="512" height="512">
+</p>
+
+## output image:
+<p align="center">
+  <img src="Result/test_result.png" alt="Logo" width="256" height="256">
+</p>
