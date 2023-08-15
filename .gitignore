@@ -13,3 +13,5 @@ Release/
 Debug/
 .vs/
 *.config
+Result/
+Image/

@@ -3,7 +3,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include "Picture.h"
-
+#include <omp.h>
 #include "shader.h"
 #include <filesystem>
 namespace fs = std::filesystem;
@@ -20,9 +20,8 @@ void resizeWindow(GLFWwindow *window, int width, int height ) {
 }
 
 std::vector<Picture*> genPicForAllFiles(std::string directory) {
+    std::cout << "Generating picture for image folder" << std::endl;
     std::vector<Picture*> pictures;
-
-
     // Convert the string to a path and check if it exists and is a directory
     std::filesystem::path dirPath(directory);
     if (std::filesystem::exists(dirPath) && std::filesystem::is_directory(dirPath)) {
@@ -48,27 +47,26 @@ std::string screenShot(Picture* picture, GLuint shader , GLFWwindow* window) {
     return resultImagePath;
 }
 
+Picture* switchDisplayPicture(int index, std::vector<Picture*> results, GLFWwindow* window) {
+    Picture* currRes = results[index];
+    resizeWindow(window, currRes->GetWidth(), currRes->GetHeight());
+    return currRes;
+}
 int main() {
+    std::cout << "Initializing" << std::endl;
     if (!glfwInit()) {
         return -1;
     }
-    //// Load image
-    //int width, height, nrChannels;
-    //stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
-    //unsigned char* data = stbi_load("test.png", &width, &height, &nrChannels, 0);
-    //if (!data) {
-    //    return -1;
-    //}
 
     GLFWwindow* window = glfwCreateWindow(512, 512, "Picture", NULL, NULL);
     if (!window) {
         glfwTerminate();
+        std::cout << "window create fail" << std::endl;
         return -1;
     }
-
     glfwMakeContextCurrent(window);
     glewInit();
-
+    std::cout << "Loading Shaders" << std::endl;
     //create shader 
     GLuint shaderProgram = LoadShaders("shaders/shader.vert", "shaders/shader.frag");
     glUseProgram(shaderProgram);
@@ -78,20 +76,52 @@ int main() {
     GLuint resizeProgram = LoadShaders("shaders/resizeShader.vert", "shaders/resizeShader.frag");
     std::vector<Picture*> pictures = genPicForAllFiles(imagePath);
     std::vector<Picture*> results;
-
-    for (Picture* pic : pictures) {
+    std::cout << "resizing images" << std::endl;
+    for (int i = 0; i < pictures.size(); i++) {
+        Picture* pic = pictures[i];
         std::cout << pic->GetName() << std::endl;
+        resizeWindow(window, pic->GetWidth() / 2, pic->GetHeight() / 2);
         std::string resultImagePath = screenShot(pic, shaderProgram, window);
         Picture* result = new Picture(resultImagePath);
         results.emplace_back(result);
     }
-    Picture* currRes = results[0];
-    resizeWindow(window, currRes->GetWidth() / 2, currRes->GetHeight() / 2);
+    int currResultIndex = 0;
+    Picture* currPicture = switchDisplayPicture(currResultIndex, results, window);
+    Picture* currResult = switchDisplayPicture(currResultIndex, results, window);
+    
+    int leftPressed = false;
+    int rightPressed = false;
+    std::cout << "Showing images" << std::endl;
     while (!glfwWindowShouldClose(window)) {
         //create buffer
+        glfwMakeContextCurrent(window);
+        glUseProgram(shaderProgram);
         glClear(GL_COLOR_BUFFER_BIT);
+        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS&& !leftPressed) {
+            // Handle left arrow key press here
+            currResultIndex = std::max(0, --currResultIndex);
+            std::cout << "Showing Image: " << currResultIndex << std::endl;
+            currResult = switchDisplayPicture(currResultIndex, results, window);
+            leftPressed = true;
+        }
+        else if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_RELEASE) {
+            leftPressed = false;
+        
+        }
+        if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS && !rightPressed) {
+            // Handle left arrow key press here
+            int maxIndex = results.size() - 1;
+            currResultIndex = std::min(maxIndex, ++currResultIndex);
+            std::cout << "Showing Image: " << currResultIndex << std::endl;
+            currResult = switchDisplayPicture(currResultIndex, results, window);
+            rightPressed = true;
+        }
+        else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_RELEASE) {
+            rightPressed = false;
 
-        currRes->draw(shaderProgram);
+        }
+        
+        currResult->draw(shaderProgram);
 
         glfwSwapBuffers(window);
         //pic->saveResizedImage(imagePath+"result.png", window);

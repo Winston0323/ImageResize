@@ -6,7 +6,7 @@ This is a tool for resize an NxN image (N is power of 2 for simplicity) and retu
 # 2. How to use
 1. place all your NxN images inside `Image` folder
 2. Start the program
-3. All resized images will be present inside `Result` folder
+3. All resized images will be present inside `Result` folder, result image name will be `originalname_result.png`
 
 
 # 3. Examples:
