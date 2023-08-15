@@ -25,8 +25,11 @@ This is a tool for resize an NxN image (N is power of 2 for simplicity) and retu
 ### C++
 - [How to get file number in a directory(std::filesystem)](https://stackoverflow.com/questions/41304891/how-to-count-the-number-of-files-in-a-directory-using-standard)
 - [omp](https://www.openmp.org/wp-content/uploads/OpenMP3.1-CCard.pdf)
+- [stb](https://github.com/nothings/stb/tree/master)
 ## OpenGL
 - [How GL_LINEAR perform](https://registry.khronos.org/OpenGL-Refpages/gl4/html/glTexParameter.xhtml)
 - [Texture Mapping](https://learnopengl.com/Getting-started/Textures)
+- [Save frame buffer into image](https://lencerf.github.io/post/2019-09-21-save-the-opengl-rendering-to-image-file/)
 ## Shader.cpp / Shader.h 
  - [UC SanDiego CSE167 starter code](http://ivl.calit2.net/wiki/index.php/BasecodeCSE167F20)
+
