@@ -12,6 +12,7 @@ This is a tool for resize an NxN image (N is power of 2 for simplicity) and retu
 <p align="center">
   <img src="Samples/howtouse.png" alt="Logo" width="768" height="512">
 </p>
+
 # 3. Build Instruction
 [Please refer to UC SanDiego CSE167 starter code build instruction](http://ivl.calit2.net/wiki/index.php/BasecodeCSE167F20)
 # 4. Examples:
