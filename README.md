@@ -4,10 +4,11 @@
 This is a tool for resize an NxN image (N is power of 2 for simplicity) and returns an image that is N/2 x N/2. The program use `glTexParameteri` as the algorithm of resizing since `GL_LINEAR` will use the four nearest pixel to produce the result, which is the same as required. I also implement a resize shader. Using such shader will also perform the required task using GLSL, which is also paralleling the code. I think both way will create fast result, rather than using CPU to compute. And for the parts that are not in shader, for example reading in images, I used omp to paraellel them and mark critical for the not thread safe parts. 
 
 # 2. How to use
-1. Place all your NxN images inside `Image` folder, the program will read RGB and RGBA format images
-2. Start the program
-3. All resized images will be present inside `Result` folder, result image name will be `originalname_result.png`
-4. Use left and right arrow key to switch between images, on left side is the original image and the right corner shows the result image. The showing picture's name will be printed in the terminal
+1. Create a `Image` folder and a `Result` folder
+2. Place all your NxN images inside `Image` folder, the program will read RGB and RGBA format images
+3. Start the program
+4. All resized images will be present inside `Result` folder, result image name will be `originalname_result.png`
+5. Use left and right arrow key to switch between images, on left side is the original image and the right corner shows the result image. The showing picture's name will be printed in the terminal
 <p align="center">
   <img src="Samples/howtouse.png" alt="Logo" width="768" height="512">
 </p>
