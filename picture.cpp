@@ -94,7 +94,7 @@ Picture::~Picture()
 	
 }
 /// <summary>
-/// drawing function of the picture, should be called each frame
+///  drawing function that will cover all window
 /// </summary>
 /// <param name="shader"> the shader we are using </param>
 void Picture::draw(GLuint shader)
@@ -108,6 +108,74 @@ void Picture::draw(GLuint shader)
 
 	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES,6, GL_UNSIGNED_INT, 0);
+	// Unbind the VAO and shader program
+	glBindVertexArray(0);
+	glUseProgram(0);
+}
+/// <summary>
+/// drawing function that will cover left side of the window, where original image should be
+/// </summary>
+/// <param name="shader"> the shader we are using </param>
+void Picture::originDraw(GLuint shader)
+{
+	float vertices[] = {
+		// positions         // texture coords
+		 0.33f,  1.0f, 0.0f,  1.0f, 1.0f,   // top right
+		 0.33f, -1.0f, 0.0f,  1.0f, 0.0f,   // bottom right
+		-1.0f, -1.0f, 0.0f,  0.0f, 0.0f,   // bottom left
+		-1.0f,  1.0f, 0.0f,  0.0f, 1.0f    // top left 
+	};
+	glBindVertexArray(VAO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	// position attribute
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture);
+
+	// Here you'd typically set up and draw your quad to which the texture is applied
+	// This example assumes you have some method for drawing a quad
+	glUseProgram(shader);
+
+	glBindVertexArray(VAO);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	// Unbind the VAO and shader program
+	glBindVertexArray(0);
+	glUseProgram(0);
+}
+/// <summary>
+/// drawing function that will cover right corner, where result image should be
+/// </summary>
+/// <param name="shader"> the shader we are using </param>
+void Picture::resultDraw(GLuint shader)
+{
+	float vertices[] = {
+		// positions         // texture coords
+		 1.0f,  1.0f, 0.0f,  1.0f, 1.0f,   // top right
+		 1.0f,  0.0f, 0.0f,  1.0f, 0.0f,   // bottom right
+		0.33f,  0.0f, 0.0f,  0.0f, 0.0f,   // bottom left
+		0.33f,  1.0f, 0.0f,  0.0f, 1.0f    // top left 
+	};
+	glBindVertexArray(VAO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	// position attribute
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture);
+
+	// Here you'd typically set up and draw your quad to which the texture is applied
+	// This example assumes you have some method for drawing a quad
+	glUseProgram(shader);
+
+	glBindVertexArray(VAO);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	// Unbind the VAO and shader program
 	glBindVertexArray(0);
 	glUseProgram(0);
@@ -140,5 +208,3 @@ void Picture::saveResizedImage(std::string filepath, GLFWwindow* w) {
 		stbi_write_png(filepath.c_str(), width, height, nrChannels, buffer.data(), stride);
 	}
 }
-
-

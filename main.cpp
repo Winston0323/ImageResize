@@ -18,7 +18,7 @@ std::string resultPath = "Result/";
 /// <param name="width"> the desired width </param>
 /// <param name="height"> the desired height </param>
 void resizeWindow(GLFWwindow *window, int width, int height ) {
-
+    std::cout << "Window Size: " << width << ", " << height << std::endl;
     glfwSetWindowSize(window, width, height);
     glViewport(0, 0, width, height);
     
@@ -83,7 +83,7 @@ std::string screenShot(Picture* picture, GLuint shader , GLFWwindow* window) {
 /// <returns>the picture pointer</returns>
 Picture* switchDisplayPicture(int index, std::vector<Picture*> picVector, GLFWwindow* window) {
     Picture* currRes = picVector[index];
-    resizeWindow(window, currRes->GetWidth(), currRes->GetHeight());
+    resizeWindow(window, currRes->GetWidth() * 3, currRes->GetHeight() * 2);
     return currRes;
 }
 int main() {
@@ -128,6 +128,7 @@ int main() {
     }
     int currResultIndex = 0;
     Picture* currResult = switchDisplayPicture(currResultIndex, results, window);
+    Picture* currOrigin = pictures[currResultIndex];
     int leftPressed = false;
     int rightPressed = false;
     std::cout << "Showing images" << std::endl;
@@ -140,7 +141,9 @@ int main() {
         if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS&& !leftPressed) {
             // Handle left arrow key press here
             currResultIndex = std::max(0, --currResultIndex);
-            std::cout << "Showing Image: " << currResultIndex << std::endl;
+            std::cout << "Showing Index " << currResultIndex << " Image: " << currOrigin->GetName() << std::endl;
+
+            currOrigin = pictures[currResultIndex];
             currResult = switchDisplayPicture(currResultIndex, results, window);
             leftPressed = true;
         }
@@ -152,7 +155,8 @@ int main() {
             // Handle left arrow key press here
             int maxIndex = results.size() - 1;
             currResultIndex = std::min(maxIndex, ++currResultIndex);
-            std::cout << "Showing Image: " << currResultIndex << std::endl;
+            currOrigin = pictures[currResultIndex];
+            std::cout << "Showing Index " << currResultIndex << " Image: " << currOrigin->GetName() << std::endl;
             currResult = switchDisplayPicture(currResultIndex, results, window);
             rightPressed = true;
         }
@@ -161,8 +165,8 @@ int main() {
 
         }
         
-        currResult->draw(shaderProgram);
-
+        currResult->resultDraw(shaderProgram);
+        currOrigin->originDraw(shaderProgram);
         glfwSwapBuffers(window);
         glfwPollEvents();
     }

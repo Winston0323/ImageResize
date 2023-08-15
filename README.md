@@ -7,7 +7,10 @@ This is a tool for resize an NxN image (N is power of 2 for simplicity) and retu
 1. Place all your NxN images inside `Image` folder, the program will read RGB and RGBA format images
 2. Start the program
 3. All resized images will be present inside `Result` folder, result image name will be `originalname_result.png`
-4. Use left and right arrow key to switch between result images, the showing picture's name will be printed in the terminal
+4. Use left and right arrow key to switch between images, on left side is the original image and the right corner shows the result image. The showing picture's name will be printed in the terminal
+<p align="center">
+  <img src="Samples/howtouse.png" alt="Logo" width="768" height="512">
+</p>
 # 3. Build Instruction
 [Please refer to UC SanDiego CSE167 starter code build instruction](http://ivl.calit2.net/wiki/index.php/BasecodeCSE167F20)
 # 4. Examples:

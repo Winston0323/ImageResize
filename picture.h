@@ -29,6 +29,8 @@ public:
 	~Picture();
 
 	void draw(GLuint shader);
+	void resultDraw(GLuint shader);
+	void originDraw(GLuint shader);
 	int GetWidth() { return this->width; }
 	int GetHeight() { return this->height; }
 	std::string GetName() { return this->imageName; }
