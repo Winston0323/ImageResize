@@ -63,13 +63,16 @@ std::vector<Picture*> genPicForAllFiles(std::string directory) {
 /// <param name="window"> the window of current context </param>
 /// <returns>the name of its result</returns>
 std::string screenShot(Picture* picture, GLuint shader , GLFWwindow* window) {
-    glClear(GL_COLOR_BUFFER_BIT);
-    picture->draw(shader);
-    glfwSwapBuffers(window);
-    std::string resultImagePath = resultPath + picture->GetName().substr(imagePath.size(), picture->GetName().size() - imagePath.size() - 4) + "_result.png";
-    picture->saveResizedImage(resultImagePath, window);
+    #pragma omp critical
+    {
+        glClear(GL_COLOR_BUFFER_BIT);
+        picture->draw(shader);
+        glfwSwapBuffers(window);
+        std::string resultImagePath = resultPath + picture->GetName().substr(imagePath.size(), picture->GetName().size() - imagePath.size() - 4) + "_result.png";
+        picture->saveResizedImage(resultImagePath, window);
 
-    return resultImagePath;
+        return resultImagePath;
+    }
 }
 /// <summary>
 /// switch to the index image
@@ -110,7 +113,9 @@ int main() {
     
     std::vector<Picture*> pictures = genPicForAllFiles(imagePath);
     std::vector<Picture*> results;
+    results.resize(pictures.size(), nullptr);
     std::cout << "resizing images" << std::endl;
+    #pragma omp parallel for  
     for (int i = 0; i < pictures.size(); i++) {
         Picture* pic = pictures[i];
         std::cout << pic->GetName() << std::endl;
@@ -119,8 +124,7 @@ int main() {
         //take a screenshot
         std::string resultImagePath = screenShot(pic, shaderProgram, window);
         Picture* result = new Picture(resultImagePath);
-
-        results.emplace_back(result);//place back to the result array
+        results[i] = result;//place back to the result array
     }
     int currResultIndex = 0;
     Picture* currResult = switchDisplayPicture(currResultIndex, results, window);

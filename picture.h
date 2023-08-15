@@ -14,6 +14,7 @@ class Picture
 private:
 	
 	//filename
+	bool RGBA;
 	std::string imageName;
 	int width, height, nrChannels;
 	GLuint texture;

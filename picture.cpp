@@ -28,7 +28,17 @@ Picture::Picture(std::string inputFile)
 	if (!data) {
 		std::cout << "Cannot read images:"<< inputFile << std::endl;
 	}
-	
+
+	//check the format of the image
+	if (nrChannels == 3) {
+		RGBA = false;
+	}
+	else if (nrChannels == 4) {
+		RGBA = true;
+	}
+	else {
+		std::cout << "weird channel number " << nrChannels << std::endl;
+	}
 	#pragma omp critical //cannot multithreading when reading texture and binding buffers
 	{
 		glGenTextures(1, &texture);
@@ -42,9 +52,12 @@ Picture::Picture(std::string inputFile)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		if (RGBA) {
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		}
+		else {
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		}
 		glGenerateMipmap(GL_TEXTURE_2D);
 
 		glGenVertexArrays(1, &VAO);
@@ -105,18 +118,27 @@ void Picture::draw(GLuint shader)
 /// <param name="filepath">the desired storing location </param>
 /// <param name="w"> the buffer window </param>
 void Picture::saveResizedImage(std::string filepath, GLFWwindow* w) {
-	int width, height;
-	glfwGetFramebufferSize(w, &width, &height);
-	GLsizei nrChannels = 3;
-	GLsizei stride = nrChannels * width;
-	stride += (stride % 4) ? (4 - stride % 4) : 0;
-	GLsizei bufferSize = stride * height;
-	std::vector<char> buffer(bufferSize);
-	glPixelStorei(GL_PACK_ALIGNMENT, 4);
-	glReadBuffer(GL_FRONT);
-	glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, buffer.data());
-	stbi_flip_vertically_on_write(true);
-	stbi_write_png(filepath.c_str(), width, height, nrChannels, buffer.data(), stride);
+
+		int width, height;
+		glfwGetFramebufferSize(w, &width, &height);
+		GLsizei stride = nrChannels * width;
+		stride += (stride % 4) ? (4 - stride % 4) : 0;
+		GLsizei bufferSize = stride * height;
+		std::vector<char> buffer(bufferSize);
+		#pragma omp critical
+		{
+		glPixelStorei(GL_PACK_ALIGNMENT, 4);
+		glReadBuffer(GL_FRONT);
+		if (RGBA) {
+			glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, buffer.data());
+		}
+		else {
+			glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, buffer.data());
+		}
+		
+		stbi_flip_vertically_on_write(true);
+		stbi_write_png(filepath.c_str(), width, height, nrChannels, buffer.data(), stride);
+	}
 }
 
 
