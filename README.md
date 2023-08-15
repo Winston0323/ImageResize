@@ -13,12 +13,12 @@ This is a tool for resize an NxN image (N is power of 2 for simplicity) and retu
 # 4. Examples:
 ## Input image:
 <p align="center">
-  <img src="Image/copy_0.png" alt="Logo" width="512" height="512">
+  <img src="Samples/copy_0.png" alt="Logo" width="512" height="512">
 </p>
 
 ## output image:
 <p align="center">
-  <img src="Result/copy_0_result.png" alt="Logo" width="256" height="256">
+  <img src="Samples/copy_0_result.png" alt="Logo" width="256" height="256">
 </p>
 
 # 5. Reference
