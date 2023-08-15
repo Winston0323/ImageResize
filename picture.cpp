@@ -3,7 +3,10 @@
 #include "stb_image.h"
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
-////////////////////////////////////////////////////////////////////////////////
+/// <summary>
+/// constructor of Picture
+/// </summary>
+/// <param name="inputFile"> the image name </param>
 Picture::Picture(std::string inputFile)
 {
 	imageName = inputFile;
@@ -19,52 +22,56 @@ Picture::Picture(std::string inputFile)
 	1, 2, 3   // second triangle
 	};
 
-	// Load image
+	// loading image
 	stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
 	unsigned char* data = stbi_load(imageName.c_str(), &width, &height, &nrChannels, 0);
 	if (!data) {
 		std::cout << "Cannot read images:"<< inputFile << std::endl;
 	}
-
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
-
-	// Set texture options
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	//using GL_Linear filter averging nears four pixel 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);	
-
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-	glGenerateMipmap(GL_TEXTURE_2D);
 	
-	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
-	glGenBuffers(1, &EBO);
+	#pragma omp critical //cannot multithreading when reading texture and binding buffers
+	{
+		glGenTextures(1, &texture);
+		glBindTexture(GL_TEXTURE_2D, texture);
 
-	// bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
-	glBindVertexArray(VAO);
+		// Set texture options
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-	// position attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
+		//using GL_Linear filter averging nears four pixel 
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-	stbi_image_free(data);  // Free memory
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
 
+		glGenVertexArrays(1, &VAO);
+		glGenBuffers(1, &VBO);
+		glGenBuffers(1, &EBO);
+
+		// bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
+		glBindVertexArray(VAO);
+
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+		// position attribute
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(0);
+
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+		glEnableVertexAttribArray(1);
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+		stbi_image_free(data);  // Free memory
+	}
 }
 
-////////////////////////////////////////////////////////////////////////////////
+/// <summary>
+/// the destructor of picture 
+/// </summary>
 Picture::~Picture()
 {
 	// Delete the VBOs and the VAO.
@@ -73,7 +80,10 @@ Picture::~Picture()
 	glDeleteBuffers(1, &EBO);
 	
 }
-////////////////////////////////////////////////////////////////////////////////
+/// <summary>
+/// drawing function of the picture, should be called each frame
+/// </summary>
+/// <param name="shader"> the shader we are using </param>
 void Picture::draw(GLuint shader)
 {
 	glActiveTexture(GL_TEXTURE0);
@@ -85,12 +95,15 @@ void Picture::draw(GLuint shader)
 
 	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES,6, GL_UNSIGNED_INT, 0);
-
 	// Unbind the VAO and shader program
 	glBindVertexArray(0);
 	glUseProgram(0);
 }
-////////////////////////////////////////////////////////////////////////////////
+/// <summary>
+/// save the resized image into png
+/// </summary>
+/// <param name="filepath">the desired storing location </param>
+/// <param name="w"> the buffer window </param>
 void Picture::saveResizedImage(std::string filepath, GLFWwindow* w) {
 	int width, height;
 	glfwGetFramebufferSize(w, &width, &height);
