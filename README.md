@@ -2,16 +2,18 @@
 
 # 1. Responds to questions
 ### (1) Write a program that receives an NxN image (N is power of 2 for simplicity) and returns an image that is N/2 x N/2 with each pixel is an average of 4 adjacent pixels in the input image. (Use OpenGL API Texture to render the processed image and Render image using OpenGL texture)
-- The program use `glTexParameteri` as the algorithm of resizing since `GL_LINEAR` will use the four nearest pixel to produce the result, which is the same as required. I also implement a resize shader. Using such shader will also perform the required task using GLSL, which is also paralleling the code. I think both way will create fast result, rather than using CPU to compute. And for the parts that are not in shader, for example reading in images, I used omp to paraellel them and mark critical for the not thread safe parts. 
+- The program use `glTexParameteri` as the algorithm of resizing since `GL_LINEAR` will use the four nearest pixel to produce the result, which is the same as required. I also implement a resize shader. Using such shader will also perform the required task using GLSL, which is also paralleling the code. Both way will create slightly faster result than using CPU to compute.
 
 ### (2) How can you modify this program to do I for 10 or 100 images?
 - Rather than initializing VAO and VBO the image inside main, I wrote a class for `picture`, which can reuse the code when producing a bunch of images 
 
 ### (3) Can you modify program using multiple threads to optimize for processing speed?
-- The current method I use which is calling `glTexParameteri` will produce the result during fragment shader. And the `resizeShader` will also do such method during GPU rendering. These are the method I tried for GPU parallelism. For CPU parallelism, I tried to run the code with either multithreading in C++ and also omp, both method will produce bad result since it mess up with VAO and VBO binding which leads to black images. I also write a CPU code with omp that doesnt do rendering at all and it produce the same speed as my current method. So we can assume that our code is faster, since it also do the rendering procedure during the process of resizing the image. But the difference is not significant
+- The current method I use which is calling `glTexParameteri` will produce the result during fragment shader. And the `resizeShader` will also do such method during GPU rendering. 
+- For CPU parallelism, I tried to run the code with either multithreading in C++ and also omp, both method will produce bad result since it mess up with VAO and VBO binding and OGL APIs which will lead to black images. 
+- I also write a CPU code with omp that doesnt do rendering at all and it produce the same speed as my current method. So we can assume that our code is faster, since it also do the rendering procedure during the process of resizing the image. But the difference is not significant
 
 # 2. How to use
-1. Create a `Image` folder and a `Result` folder
+1. Create an `Image` folder and a `Result` folder
 2. Place all your NxN images inside `Image` folder, the program will read RGB and RGBA format images
 3. Start the program
 4. All resized images will be present inside `Result` folder, result image name will be `originalname_result.png`

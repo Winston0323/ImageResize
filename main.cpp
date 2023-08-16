@@ -43,12 +43,11 @@ std::vector<Picture*> genPicForAllFiles(std::string directory) {
         auto entry = std::filesystem::directory_iterator(dirPath);
         //#pragma omp parallel for        //Parallelize the loop using OpenMP
         for (int i = 0; i < numFiles; i++) {
-            if (std::filesystem::is_regular_file(entry->status())) {
-                std::string filename = imagePath + entry->path().filename().string();
-                std::cout << "Reading file: " << filename << std::endl;
-                Picture* currPic = new Picture(filename);
-                pictures[i] = currPic;
-            }
+            //produce file name
+            std::string filename = imagePath + entry->path().filename().string();
+            std::cout << "Reading file: " << filename << std::endl;
+            Picture* currPic = new Picture(filename);
+            pictures[i] = currPic;
             entry++;
         }
     }
@@ -65,13 +64,17 @@ std::vector<Picture*> genPicForAllFiles(std::string directory) {
 /// <returns>the name of its result</returns>
 std::string screenShot(Picture* picture, GLuint shader , GLFWwindow* window) {
 
-        glClear(GL_COLOR_BUFFER_BIT);
-        picture->draw(shader);
-        glfwSwapBuffers(window);
-        std::string resultImagePath = resultPath + picture->GetName().substr(imagePath.size(), picture->GetName().size() - imagePath.size() - 4) + "_result.png";
-        picture->saveResizedImage(resultImagePath, window);
-
-        return resultImagePath;
+    //clear buffer
+    glClear(GL_COLOR_BUFFER_BIT);
+    //draw the picture
+    picture->draw(shader);
+    glfwSwapBuffers(window);
+    //produce destination path
+    std::string resultImagePath = resultPath + picture->GetName().substr(imagePath.size(), picture->GetName().size() - imagePath.size() - 4) + "_result.png";
+    //save the image to destination
+    picture->saveResizedImage(resultImagePath, window);
+    //return the path of the file
+    return resultImagePath;
 
 }
 /// <summary>
