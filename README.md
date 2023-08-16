@@ -22,7 +22,7 @@
   <img src="Samples/howtouse.png" alt="Logo" width="768" height="512">
 </p>
 
-## Pipline
+## Algorithm Pipline
 1. Generate a `Picture` object for each image inside `Image`
 2. Using `GL_LINEAR` to process texture
 3. Render this `Picture` object once to the frame buffer
