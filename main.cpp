@@ -8,15 +8,16 @@
 #include <filesystem>
 namespace fs = std::filesystem;
 
+//path for image and results
 std::string imagePath = "Image/";
 std::string resultPath = "Result/";
 
 /// <summary>
 /// resizing an window
 /// </summary>
-/// <param name="window"> the window you want to resize </param>
-/// <param name="width"> the desired width </param>
-/// <param name="height"> the desired height </param>
+/// <param name="window"> The window you want to resize </param>
+/// <param name="width"> The desired width </param>
+/// <param name="height"> The desired height </param>
 void resizeWindow(GLFWwindow *window, int width, int height ) {
     std::cout << "Window Size: " << width << ", " << height << std::endl;
     glfwSetWindowSize(window, width, height);
@@ -26,8 +27,8 @@ void resizeWindow(GLFWwindow *window, int width, int height ) {
 /// <summary>
 /// Read all images from a directory
 /// </summary>
-/// <param name="directory"> string of that dir</param>
-/// <returns>an array of Picture*</returns>
+/// <param name="directory"> String of that dir</param>
+/// <returns>An array of Picture*</returns>
 std::vector<Picture*> genPicForAllFiles(std::string directory) {
     std::vector<Picture*> pictures;
 
@@ -40,7 +41,7 @@ std::vector<Picture*> genPicForAllFiles(std::string directory) {
         int numFiles = std::distance(std::filesystem::directory_iterator(dirPath), std::filesystem::directory_iterator{});
         pictures.resize(numFiles, nullptr);
         auto entry = std::filesystem::directory_iterator(dirPath);
-        #pragma omp parallel for        //Parallelize the loop using OpenMP
+        //#pragma omp parallel for        //Parallelize the loop using OpenMP
         for (int i = 0; i < numFiles; i++) {
             if (std::filesystem::is_regular_file(entry->status())) {
                 std::string filename = imagePath + entry->path().filename().string();
@@ -63,8 +64,7 @@ std::vector<Picture*> genPicForAllFiles(std::string directory) {
 /// <param name="window"> the window of current context </param>
 /// <returns>the name of its result</returns>
 std::string screenShot(Picture* picture, GLuint shader , GLFWwindow* window) {
-    #pragma omp critical
-    {
+
         glClear(GL_COLOR_BUFFER_BIT);
         picture->draw(shader);
         glfwSwapBuffers(window);
@@ -72,7 +72,7 @@ std::string screenShot(Picture* picture, GLuint shader , GLFWwindow* window) {
         picture->saveResizedImage(resultImagePath, window);
 
         return resultImagePath;
-    }
+
 }
 /// <summary>
 /// switch to the index image
@@ -86,6 +86,7 @@ Picture* switchDisplayPicture(int index, std::vector<Picture*> picVector, GLFWwi
     resizeWindow(window, currRes->GetWidth() * 3, currRes->GetHeight() * 2);
     return currRes;
 }
+
 int main() {
         std::cout << "Loading Shaders" << std::endl;
     if (!glfwInit()) {
@@ -110,12 +111,13 @@ int main() {
     //create resize shader 
     GLuint resizeProgram = LoadShaders("shaders/resizeShader.vert", "shaders/resizeShader.frag");
     
-    
+    //create all picutures
     std::vector<Picture*> pictures = genPicForAllFiles(imagePath);
     std::vector<Picture*> results;
     results.resize(pictures.size(), nullptr);
+
     std::cout << "resizing images" << std::endl;
-    #pragma omp parallel for  
+    //#pragma omp parallel for  
     for (int i = 0; i < pictures.size(); i++) {
         Picture* pic = pictures[i];
         std::cout << pic->GetName() << std::endl;
@@ -126,6 +128,8 @@ int main() {
         Picture* result = new Picture(resultImagePath);
         results[i] = result;//place back to the result array
     }
+
+    //rendering parts
     int currResultIndex = 0;
     Picture* currResult = switchDisplayPicture(currResultIndex, results, window);
     Picture* currOrigin = pictures[currResultIndex];
@@ -164,7 +168,8 @@ int main() {
             rightPressed = false;
 
         }
-        
+
+        //draw the images inside one window
         currResult->resultDraw(shaderProgram);
         currOrigin->originDraw(shaderProgram);
         glfwSwapBuffers(window);
