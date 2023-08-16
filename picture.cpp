@@ -52,6 +52,7 @@ Picture::Picture(std::string inputFile)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+		//use different texture reading technique for different image data type
 		if (RGBA) {
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 		}
@@ -59,7 +60,7 @@ Picture::Picture(std::string inputFile)
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 		}
 		glGenerateMipmap(GL_TEXTURE_2D);
-
+		//generate buffers
 		glGenVertexArrays(1, &VAO);
 		glGenBuffers(1, &VBO);
 		glGenBuffers(1, &EBO);
@@ -101,12 +102,10 @@ void Picture::draw(GLuint shader)
 {
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texture);
-
-	// Here you'd typically set up and draw your quad to which the texture is applied
-	// This example assumes you have some method for drawing a quad
 	glUseProgram(shader);
 
 	glBindVertexArray(VAO);
+	//draw my quad
 	glDrawElements(GL_TRIANGLES,6, GL_UNSIGNED_INT, 0);
 	// Unbind the VAO and shader program
 	glBindVertexArray(0);
@@ -118,6 +117,7 @@ void Picture::draw(GLuint shader)
 /// <param name="shader"> the shader we are using </param>
 void Picture::originDraw(GLuint shader)
 {
+	//create special coordinate for original image
 	float vertices[] = {
 		// positions         // texture coords
 		 0.33f,  1.0f, 0.0f,  1.0f, 1.0f,   // top right
@@ -125,10 +125,11 @@ void Picture::originDraw(GLuint shader)
 		-1.0f, -1.0f, 0.0f,  0.0f, 0.0f,   // bottom left
 		-1.0f,  1.0f, 0.0f,  0.0f, 1.0f    // top left 
 	};
+	glUseProgram(shader);
+	//rebind buffers
 	glBindVertexArray(VAO);
-
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
 	// position attribute
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
@@ -136,11 +137,7 @@ void Picture::originDraw(GLuint shader)
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texture);
 
-	// Here you'd typically set up and draw your quad to which the texture is applied
-	// This example assumes you have some method for drawing a quad
-	glUseProgram(shader);
-
-	glBindVertexArray(VAO);
+	//draw my quad
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	// Unbind the VAO and shader program
 	glBindVertexArray(0);
@@ -152,6 +149,8 @@ void Picture::originDraw(GLuint shader)
 /// <param name="shader"> the shader we are using </param>
 void Picture::resultDraw(GLuint shader)
 {
+	glUseProgram(shader);
+	//create special coordinate for result image
 	float vertices[] = {
 		// positions         // texture coords
 		 1.0f,  1.0f, 0.0f,  1.0f, 1.0f,   // top right
@@ -159,22 +158,19 @@ void Picture::resultDraw(GLuint shader)
 		0.33f,  0.0f, 0.0f,  0.0f, 0.0f,   // bottom left
 		0.33f,  1.0f, 0.0f,  0.0f, 1.0f    // top left 
 	};
+	
+	//modify VAO 
 	glBindVertexArray(VAO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
 	// position attribute
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texture);
-
-	// Here you'd typically set up and draw your quad to which the texture is applied
-	// This example assumes you have some method for drawing a quad
-	glUseProgram(shader);
-
-	glBindVertexArray(VAO);
+	//draw my quad
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	// Unbind the VAO and shader program
 	glBindVertexArray(0);
@@ -182,6 +178,8 @@ void Picture::resultDraw(GLuint shader)
 }
 /// <summary>
 /// save the resized image into png
+/// this code is referenced from
+/// https://lencerf.github.io/post/2019-09-21-save-the-opengl-rendering-to-image-file/
 /// </summary>
 /// <param name="filepath">the desired storing location </param>
 /// <param name="w"> the buffer window </param>
